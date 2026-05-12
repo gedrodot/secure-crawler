@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package securecrawler;
+
+service FetcherService {
+  rpc Fetch(FetchRequest) returns (FetchResponse);
+}
+message FetchResponse {
+  string body = 1;
+}
+message FetchRequest {
+  string url = 1;
+}
+
+service ParserService {
+  rpc Parse(ParseRequest) returns (ParseResponse);
+}
+
+message ParseRequest {
+  string body = 1;
+}
+
+message ParseResponse {
+  repeated string urls = 1;
+}

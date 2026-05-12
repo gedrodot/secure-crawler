@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package securecrawler;
 
+option go_package = "github.com/gedrodot/secure-crawler/proto";
+
 service FetcherService {
   rpc Fetch(FetchRequest) returns (FetchResponse);
 }

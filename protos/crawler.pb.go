@@ -112,6 +112,7 @@ func (x *FetchRequest) GetUrl() string {
 type ParseRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Body          string                 `protobuf:"bytes,1,opt,name=body,proto3" json:"body,omitempty"`
+	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -149,6 +150,13 @@ func (*ParseRequest) Descriptor() ([]byte, []int) {
 func (x *ParseRequest) GetBody() string {
 	if x != nil {
 		return x.Body
+	}
+	return ""
+}
+
+func (x *ParseRequest) GetUrl() string {
+	if x != nil {
+		return x.Url
 	}
 	return ""
 }
@@ -205,9 +213,10 @@ const file_protos_crawler_proto_rawDesc = "" +
 	"\rFetchResponse\x12\x12\n" +
 	"\x04body\x18\x01 \x01(\tR\x04body\" \n" +
 	"\fFetchRequest\x12\x10\n" +
-	"\x03url\x18\x01 \x01(\tR\x03url\"\"\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\"4\n" +
 	"\fParseRequest\x12\x12\n" +
-	"\x04body\x18\x01 \x01(\tR\x04body\"#\n" +
+	"\x04body\x18\x01 \x01(\tR\x04body\x12\x10\n" +
+	"\x03url\x18\x02 \x01(\tR\x03url\"#\n" +
 	"\rParseResponse\x12\x12\n" +
 	"\x04urls\x18\x01 \x03(\tR\x04urls2T\n" +
 	"\x0eFetcherService\x12B\n" +

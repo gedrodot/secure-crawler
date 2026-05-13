@@ -20,6 +20,7 @@ service ParserService {
 
 message ParseRequest {
   string body = 1;
+  string url = 2;
 }
 
 message ParseResponse {

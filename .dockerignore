@@ -1,0 +1,4 @@
+.git/
+istio-*/
+req.json
+*.exe

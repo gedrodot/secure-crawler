@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"net/url"
 	pb "securecrawler/protos"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html"
 	"google.golang.org/grpc"
@@ -28,6 +30,8 @@ func NewParserServer() (*GrpcParserServer, error) {
 
 // Fetch(context.Context, *FetchRequest) (*FetchResponse, error)
 func (s *GrpcParserServer) Parse(ctx context.Context, in *pb.ParseRequest) (*pb.ParseResponse, error) {
+	start := time.Now()
+
 	doc, err := html.Parse(strings.NewReader(in.Body))
 	if err != nil {
 		return nil, err
@@ -47,7 +51,9 @@ func (s *GrpcParserServer) Parse(ctx context.Context, in *pb.ParseRequest) (*pb.
 				if r.Key == "href" {
 					u, err := url.Parse(r.Val)
 					if err == nil {
+
 						u = unirl.ResolveReference(u)
+
 						u.RawQuery = ""
 						u.Fragment = ""
 						u.Path = strings.TrimSuffix(u.Path, "/")
@@ -64,6 +70,8 @@ func (s *GrpcParserServer) Parse(ctx context.Context, in *pb.ParseRequest) (*pb.
 		}
 	}
 	f(doc)
+
+	fmt.Println(time.Since(start))
 	return &pb.ParseResponse{Urls: result}, nil
 }
 
@@ -71,13 +79,13 @@ func main() {
 	creds := insecure.NewCredentials()
 	service, _ := NewParserServer()
 
-	server := grpc.NewServer(grpc.Creds(creds))
+	server := grpc.NewServer(grpc.Creds(creds), grpc.MaxRecvMsgSize(50*1024*1024))
 	pb.RegisterParserServiceServer(server, service)
 	reflection.Register(server)
 
 	listener, err := net.Listen("tcp", _portNumber)
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err) // Громко падаем
+		log.Fatalf("Failed to listen: %v", err)
 	}
 
 	log.Printf("Parser gRPC server is listening on %s", _portNumber)

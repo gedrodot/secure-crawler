@@ -1,0 +1,104 @@
+# 1. Политика STRICT mTLS для пространства default
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default-strict-mtls
+  namespace: default
+spec:
+  mtls:
+    mode: STRICT
+---
+# 2. Сервис и Деплоймент для PARSER
+apiVersion: v1
+kind: Service
+metadata:
+  name: parser-service
+spec:
+  selector:
+    app: parser
+  ports:
+    - name: grpc-parser
+      protocol: TCP
+      port: 10117
+      targetPort: 10117
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parser-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: parser
+  template:
+    metadata:
+      labels:
+        app: parser
+    spec:
+      containers:
+        - name: parser
+          image: crawler-parser:latest
+          imagePullPolicy: Never # Говорит K8s брать локальный образ из Minikube
+          ports:
+            - containerPort: 10117
+---
+# 3. Сервис и Деплоймент для FETCHER
+apiVersion: v1
+kind: Service
+metadata:
+  name: fetcher-service
+spec:
+  selector:
+    app: fetcher
+  ports:
+    - name: grpc-fetcher
+      protocol: TCP
+      port: 10116
+      targetPort: 10116
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fetcher-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fetcher
+  template:
+    metadata:
+      labels:
+        app: fetcher
+    spec:
+      containers:
+        - name: fetcher
+          image: crawler-fetcher:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 10116
+---
+# 4. Деплоймент для DISPATCHER
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatcher-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dispatcher
+  template:
+    metadata:
+      labels:
+        app: dispatcher
+    spec:
+      containers:
+        - name: dispatcher
+          image: crawler-dispatcher:latest
+          imagePullPolicy: Never
+          env:
+            - name: FETCHER_ADDR
+              value: "fetcher-service:10116"
+            - name: PARSER_ADDR
+              value: "parser-service:10117"
